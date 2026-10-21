@@ -1,0 +1,59 @@
+name: Storybook Preview
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  build-preview:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Storybook
+        run: npm run build-storybook
+
+      - name: Upload Storybook artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: storybook-preview
+          path: storybook-static
+          retention-days: 7
+
+      - name: Comment preview status
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const issue_number = context.issue.number;
+            const body = [
+              '## Storybook preview ready',
+              '',
+              'The visual review gate is ready for UX sign-off.',
+              '',
+              'Review steps:',
+              '1. Open the uploaded Storybook artifact.',
+              '2. Validate the icon against the design intent.',
+              '3. Approve or request changes before merge.'
+            ].join('\n');
+
+            await github.rest.issues.createComment({
+              owner,
+              repo,
+              issue_number,
+              body,
+            });

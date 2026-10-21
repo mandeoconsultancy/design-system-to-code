@@ -1,0 +1,102 @@
+name: Design System Sync
+
+on:
+  workflow_dispatch:
+    inputs:
+      figma_file_key:
+        description: Figma file key for the source asset
+        required: false
+        default: ''
+      figma_node_id:
+        description: Figma node ID for the icon or component to export
+        required: false
+        default: ''
+      asset_path:
+        description: Local repo path for the exported SVG asset. Used when not pulling from Figma directly.
+        required: false
+        default: design-assets/icons/upload-cloud.svg
+      framework:
+        description: Which framework output to generate
+        required: false
+        default: all
+        type: choice
+        options:
+          - react
+          - angular
+          - all
+      branch_name:
+        description: Optional branch name for the generated PR
+        required: false
+        default: design-sync
+
+jobs:
+  sync-design-asset:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    env:
+      FIGMA_TOKEN: ${{ secrets.FIGMA_TOKEN }}
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Pull asset from Figma
+        if: ${{ github.event.inputs.figma_file_key != '' && github.event.inputs.figma_node_id != '' }}
+        run: |
+          node scripts/fetch-figma-asset.mjs \
+            --file-key "${{ github.event.inputs.figma_file_key }}" \
+            --node-id "${{ github.event.inputs.figma_node_id }}" \
+            --output "${{ github.event.inputs.asset_path }}" \
+            --token "$FIGMA_TOKEN"
+
+      - name: Generate component and storybook files
+        run: node scripts/generate-icon.mjs "${{ github.event.inputs.asset_path }}" --framework "${{ github.event.inputs.framework }}"
+
+      - name: Run linting and build checks
+        run: |
+          npm run lint
+          npm run build
+          npm run build-storybook
+
+      - name: Create pull request for review
+        id: create_pr
+        uses: peter-evans/create-pull-request@v6
+        with:
+          branch: ${{ github.event.inputs.branch_name }}
+          commit-message: 'feat: sync design asset from Figma'
+          title: 'Design asset sync: ${{ github.event.inputs.asset_path }}'
+          body: |
+            ## Design sync update
+
+            This automation generated a React icon component and Storybook story from the updated design asset.
+
+            ### Required review stages
+            1. Gate 1: Developer review before merge
+            2. Gate 2: UX/Product review in Storybook after publish
+
+            ### Checks performed
+            - lint
+            - Vite build
+            - Storybook build
+
+            ### Asset
+            `${{ github.event.inputs.asset_path }}`
+          delete-branch: true
+
+      - name: Show PR summary
+        if: steps.create_pr.outputs.pull-request-number != ''
+        run: |
+          echo "Created PR #${{ steps.create_pr.outputs.pull-request-number }}"
+          echo "Branch: ${{ steps.create_pr.outputs.pull-request-branch }}"
