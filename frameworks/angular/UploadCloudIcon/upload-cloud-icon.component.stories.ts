@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/angular';
 import { UploadCloudIconComponent } from './upload-cloud-icon.component';
-
+ 
 const meta: Meta<UploadCloudIconComponent> = {
-  title: 'Angular Icons/UploadCloudIcon',
+  title: 'Menu Item Icons/Upload Cloud',
   component: UploadCloudIconComponent,
   args: {
     size: 32,

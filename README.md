@@ -15,8 +15,11 @@ This project demonstrates a controlled design-to-code workflow. Figma is treated
 ```bash
 npm install
 npm run design:sync
-npm run storybook
+npm run storybook        # React Storybook
+npm run storybook:angular   # Angular Storybook
 ```
+
+The sync workflow compares the latest Figma export against a checksum manifest before generating new code, so only changed assets are refreshed and regenerated.
 
 ## Manual sync flow
 

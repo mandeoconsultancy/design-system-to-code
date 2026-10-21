@@ -1,7 +1,7 @@
 import { UploadCloudIcon } from './UploadCloudIcon.jsx';
-
+ 
 export default {
-  title: 'Icons/UploadCloudIcon',
+  title: 'Menu Item Icons/Upload Cloud',
   component: UploadCloudIcon,
   tags: ['autodocs'],
   args: {
@@ -9,7 +9,7 @@ export default {
     color: '#111827',
   },
 };
-
+ 
 export const Default = {
   args: {},
 };

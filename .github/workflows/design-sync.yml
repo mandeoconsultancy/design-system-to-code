@@ -11,6 +11,10 @@ on:
         description: Figma node ID for the icon or component to export
         required: false
         default: ''
+      figma_page_node_id:
+        description: Figma page or frame node ID used as the change-detection root for the design sync
+        required: false
+        default: ''
       asset_path:
         description: Local repo path for the exported SVG asset. Used when not pulling from Figma directly.
         required: false
@@ -52,16 +56,18 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Pull asset from Figma
-        if: ${{ github.event.inputs.figma_file_key != '' && github.event.inputs.figma_node_id != '' }}
+      - name: Pull latest changed assets from Figma
+        if: ${{ github.event.inputs.figma_file_key != '' && github.event.inputs.figma_page_node_id != '' }}
         run: |
-          node scripts/fetch-figma-asset.mjs \
+          node scripts/figma-sync.mjs \
             --file-key "${{ github.event.inputs.figma_file_key }}" \
-            --node-id "${{ github.event.inputs.figma_node_id }}" \
-            --output "${{ github.event.inputs.asset_path }}" \
-            --token "$FIGMA_TOKEN"
+            --page-node-id "${{ github.event.inputs.figma_page_node_id }}" \
+            --framework "${{ github.event.inputs.framework }}" \
+            --token "$FIGMA_TOKEN" \
+            --poll
 
       - name: Generate component and storybook files
+        if: ${{ github.event.inputs.figma_file_key == '' || github.event.inputs.figma_page_node_id == '' }}
         run: node scripts/generate-icon.mjs "${{ github.event.inputs.asset_path }}" --framework "${{ github.event.inputs.framework }}"
 
       - name: Run linting and build checks
@@ -69,6 +75,10 @@ jobs:
           npm run lint
           npm run build
           npm run build-storybook
+
+          if [ "${{ github.event.inputs.framework }}" = "angular" ] || [ "${{ github.event.inputs.framework }}" = "all" ]; then
+            npm run build-storybook:angular
+          fi
 
       - name: Create pull request for review
         id: create_pr

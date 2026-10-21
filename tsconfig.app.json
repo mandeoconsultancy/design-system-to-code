@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./dist/out-tsc/app"
+  },
+  "include": [
+    "frameworks/angular/main.ts",
+    "frameworks/angular/app.component.ts",
+    "frameworks/angular/**/*.ts"
+  ],
+  "exclude": [
+    "frameworks/angular/**/*.stories.ts"
+  ]
+}

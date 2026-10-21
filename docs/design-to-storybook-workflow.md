@@ -5,13 +5,14 @@ This repository demonstrates a controlled workflow for design assets that are up
 ## Workflow overview
 
 1. A UI/UX designer updates or adds an SVG asset in the design source (Figma).
-2. A workflow is triggered manually in GitHub Actions.
-3. The asset is read and converted into framework-specific output for React and Angular, including Storybook stories.
-4. Automated validation runs: lint, build, and Storybook build.
-5. A pull request is created for engineering review.
-6. A developer approves the generated code before merge.
-7. The appropriate Storybook preview is reviewed by UX/Product.
-8. Final sign-off approves release for both frameworks.
+2. A workflow is triggered manually in GitHub Actions for the target Figma page or asset node.
+3. The workflow polls the Figma file metadata, compares the latest export checksum with the saved manifest, and only fetches the changed assets.
+4. The changed asset is converted into framework-specific output for React and Angular, including Storybook stories.
+5. Automated validation runs: lint, build, and Storybook build.
+6. A pull request is created for engineering review.
+7. A developer approves the generated code before merge.
+8. The appropriate Storybook preview is reviewed by UX/Product.
+9. Final sign-off approves release for both frameworks.
 
 ## Gatekeeping model
 

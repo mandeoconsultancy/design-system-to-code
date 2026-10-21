@@ -3,7 +3,7 @@ import path from 'node:path';
 
 const args = process.argv.slice(2);
 const fileKey = getArgValue(args, ['--file-key', '--fileKey', '-f']) ?? process.env.FIGMA_FILE_KEY;
-const nodeId = getArgValue(args, ['--node-id', '--nodeId', '-n']) ?? process.env.FIGMA_NODE_ID;
+const nodeId = normalizeNodeId(getArgValue(args, ['--node-id', '--nodeId', '-n']) ?? process.env.FIGMA_NODE_ID);
 const output = getArgValue(args, ['--output', '-o']) ?? process.env.FIGMA_OUTPUT_PATH ?? 'design-assets/icons/upload-cloud.svg';
 const token = getArgValue(args, ['--token', '-t']) ?? process.env.FIGMA_TOKEN ?? process.env.FIGMA_PERSONAL_ACCESS_TOKEN;
 
@@ -60,4 +60,9 @@ function getArgValue(args, keys, fallback) {
     }
   }
   return fallback;
+}
+
+function normalizeNodeId(nodeId) {
+  if (!nodeId) return nodeId;
+  return nodeId.replace(/-/g, ':');
 }

@@ -34,6 +34,7 @@ async function generateReactIcon(inputPath) {
   const { viewBox, rawSvgContent } = parseSvg(assetContents);
   const name = path.basename(inputPath, '.svg');
   const componentName = `${toPascalCase(name)}Icon`;
+  const humanizedName = humanizeName(name);
   const fileName = `${componentName}.jsx`;
   const storyFileName = `${componentName}.stories.jsx`;
   const iconDir = path.join(process.cwd(), 'src/icons');
@@ -71,9 +72,9 @@ async function generateReactIcon(inputPath) {
 `;
 
   const storySource = `import { ${componentName} } from './${fileName}';
-
+ 
 export default {
-  title: 'Icons/${componentName}',
+  title: 'Menu Item Icons/${humanizedName}',
   component: ${componentName},
   tags: ['autodocs'],
   args: {
@@ -81,7 +82,7 @@ export default {
     color: '#111827',
   },
 };
-
+ 
 export const Default = {
   args: {},
 };
@@ -105,6 +106,7 @@ async function generateAngularIcon(inputPath) {
   const { viewBox, rawSvgContent } = parseSvg(assetContents);
   const name = path.basename(inputPath, '.svg');
   const componentName = `${toPascalCase(name)}Icon`;
+  const humanizedName = humanizeName(name);
   const directory = path.join(process.cwd(), 'frameworks/angular', `${componentName}`);
   const componentPath = path.join(directory, `${toKebabCase(name)}-icon.component.ts`);
   const storyPath = path.join(directory, `${toKebabCase(name)}-icon.component.stories.ts`);
@@ -142,9 +144,9 @@ export class ${componentName}Component {
 
   const storyTemplate = `import type { Meta, StoryObj } from '@storybook/angular';
 import { ${componentName}Component } from './${toKebabCase(name)}-icon.component';
-
+ 
 const meta: Meta<${componentName}Component> = {
-  title: 'Angular Icons/${componentName}',
+  title: 'Menu Item Icons/${humanizedName}',
   component: ${componentName}Component,
   args: {
     size: 32,
@@ -213,6 +215,14 @@ function toKebabCase(value) {
     .replace(/[^a-zA-Z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
     .toLowerCase();
+}
+
+function humanizeName(value) {
+  return value
+    .split(/[^a-zA-Z0-9]+/)
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ');
 }
 
 async function readIndexIfPresent(filePath) {
